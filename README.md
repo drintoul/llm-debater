@@ -1,130 +1,152 @@
 # AI Debate Arena 🎭
 
-A dynamic web application that enables AI language models to engage in structured debates on user-defined topics. Built with Streamlit and Ollama, this platform facilitates real-time debates between different language models with optional judging and fact-checking capabilities.
+An interactive web application that facilitates structured debates between AI language models. Built with Streamlit and Ollama, this platform enables real-time debates on user-defined topics with optional judging and fact-checking capabilities.
 
-## Features
+## Key Features
 
-- **Multi-Model Debates**: Choose different language models (llama2, mistral, neural-chat) for each debater
-- **Configurable Rounds**: Set debate length from 1-5 rounds
-- **Optional Judging**: Enable a third AI model to judge the debate and declare a winner
-- **Fact Checking**: Optional fact-checking of debate statements by an AI model
-- **Real-time Visualization**: Live debate display with pro/con formatting
-- **Single-Sentence Responses**: Enforced concise arguments for clear debate flow
-- **Docker Support**: Easy deployment with Docker and Docker Compose
+- **AI vs AI Debates**: Watch different language models engage in structured debates
+- **Multiple Model Support**: Choose from various models (llama2, mistral, neural-chat) for debaters
+- **Customizable Format**: Configure debates from 1-5 rounds
+- **Optional Judging**: Enable a third AI model to evaluate and declare a winner
+- **Fact Checking**: Optional real-time fact-checking of debate statements
+- **User-Friendly Interface**: Clean UI with sidebar configuration and main debate display
+- **Single-Sentence Format**: Focused, concise arguments for clear debate progression
+- **Docker Support**: Easy deployment using Docker and Docker Compose
 
 ## Prerequisites
 
 - Docker and Docker Compose
-- Access to an Ollama server for LLM inference
-- Python 3.9+ (if running locally)
-- The following models available on your Ollama server:
+- Ollama server for LLM inference
+- Python 3.9+ (for local development)
+- Required Ollama models:
   - llama2
   - mistral
   - neural-chat
 
-## Quick Start with Docker
+## Installation
+
+### Using Docker (Recommended)
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/ai-debate-arena.git
 cd ai-debate-arena
 ```
 
-2. Configure the Ollama host in `docker-compose.yaml`:
+2. Configure Ollama host in `docker-compose.yaml`:
 ```yaml
 environment:
   - OLLAMA_HOST=http://your-ollama-host:11434
 ```
 
-3. Build and run the container:
+3. Build and start the container:
 ```bash
 docker-compose up --build
 ```
 
 4. Access the application at `http://localhost:8505`
 
-## Local Development Setup
+### Local Development
 
-1. Create a virtual environment:
+1. Set up Python environment:
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 ```
 
-2. Install dependencies:
+2. Install requirements:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set environment variables:
+3. Set the Ollama host environment variable:
 ```bash
 export OLLAMA_HOST=http://your-ollama-host:11434
 ```
 
-4. Run the application:
+4. Start the application:
 ```bash
 streamlit run app.py
 ```
 
 ## Usage Guide
 
-1. **Configure Debaters**:
-   - Select models for both Pro and Con positions
+1. **Configure Your Debate** (using sidebar):
+   - Select AI models for both debaters
    - Choose the number of debate rounds (1-5)
-
-2. **Optional Features**:
-   - Enable/disable the judging feature
-   - Enable/disable fact checking
+   - Enable/disable judging and fact-checking features
    - Select models for judge and fact checker if enabled
 
-3. **Start Debate**:
-   - Enter a debate topic
+2. **Enter Your Topic**:
+   - Provide a clear, debatable statement
+   - Example: "Social media has a net positive impact on society"
+
+3. **Start the Debate**:
    - Click "Start Debate"
    - Watch the debate unfold in real-time
-
-4. **View Results**:
-   - If judging is enabled, view the final verdict
-   - If fact checking is enabled, see verification status for each statement
+   - Follow the structured argument exchange
+   - View fact-check results and final verdict (if enabled)
 
 ## Project Structure
 
 ```
 ai-debate-arena/
-├── app.py                  # Main Streamlit application
-├── config.py              # Configuration settings
-├── debate_manager.py      # Core debate logic
-├── llm_service.py         # LLM API interaction
-├── ui_components.py       # UI component definitions
-├── styles.py             # Custom CSS styles
-├── Dockerfile            # Docker configuration
-├── docker-compose.yaml   # Docker Compose setup
-├── requirements.txt      # Python dependencies
-└── README.md            # Project documentation
+├── app.py                # Main Streamlit application
+├── config.py            # Configuration settings
+├── debate_manager.py    # Core debate logic
+├── llm_service.py       # LLM API interaction
+├── ui_components.py     # UI components and layout
+├── styles.py           # Custom CSS styling
+├── Dockerfile          # Docker configuration
+├── docker-compose.yaml # Docker Compose configuration
+└── requirements.txt    # Python dependencies
 ```
 
-## Configuration Options
+## Configuration
 
-Edit `config.py` to modify:
-- Available LLM models
-- Maximum number of debate rounds
+Modify `config.py` to adjust:
+- Available language models
+- Maximum debate rounds
 - Default number of rounds
 - Ollama host URL
 
+## Technical Details
+
+### API Integration
+- Uses Ollama API for LLM inference
+- Supports streaming responses
+- Enforces single-sentence responses
+- Handles fact-checking and judging prompts
+
+### UI Features
+- Sidebar configuration panel
+- Real-time debate display
+- Color-coded pro/con arguments
+- Fact-check indicators
+- Final verdict display
+
 ## Limitations
 
-- Limited to single-sentence responses for clarity
-- Requires active connection to an Ollama server
-- Maximum of 5 debate rounds per session
-- Fixed set of available LLM models
-- Fact checking accuracy depends on the model's capabilities
+- Requires active Ollama server connection
+- Limited to single-sentence responses
+- Maximum of 5 debate rounds
+- Fixed set of available models
+- Fact-checking accuracy depends on model capabilities
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
 ## License
 
 MIT License
-(c) 2025 Dave Rintoul
+Copyright (c) 2025
 
 ## Acknowledgments
 
-- Built with Streamlit for web interface
-- Uses Ollama for LLM inference
-- UI inspired by modern debate formats
+- Built with [Streamlit](https://streamlit.io/)
+- Uses [Ollama](https://ollama.ai/) for LLM inference
