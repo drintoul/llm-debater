@@ -25,7 +25,7 @@ An interactive web application that facilitates structured debates between AI la
 
 ## Installation
 
-### Using Docker (Recommended)
+### Using Docker
 
 1. Clone the repository:
 ```bash
@@ -45,29 +45,6 @@ docker-compose up --build
 ```
 
 4. Access the application at `http://localhost:8505`
-
-### Local Development
-
-1. Set up Python environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-```
-
-2. Install requirements:
-```bash
-pip install -r requirements.txt
-```
-
-3. Set the Ollama host environment variable:
-```bash
-export OLLAMA_HOST=http://your-ollama-host:11434
-```
-
-4. Start the application:
-```bash
-streamlit run app.py
-```
 
 ## Usage Guide
 
@@ -132,14 +109,6 @@ Modify `config.py` to adjust:
 - Maximum of 5 debate rounds
 - Fixed set of available models
 - Fact-checking accuracy depends on model capabilities
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
 
 ## License
 
