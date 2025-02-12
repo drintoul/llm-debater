@@ -4,27 +4,50 @@ from config import AVAILABLE_MODELS, MAX_ROUNDS, DEFAULT_ROUNDS
 class DebateUI:
     @staticmethod
     def render_controls():
-        col1, col2 = st.columns([2,2])
-        with col1:
-            model1 = st.selectbox("Select first debater model", AVAILABLE_MODELS, index=0)
-        with col2:
-            model2 = st.selectbox("Select second debater model", AVAILABLE_MODELS, index=1)
+        # Move configuration controls to sidebar
+        with st.sidebar:
+            st.header("Debate Configuration")
 
-        col1, col2, col3 = st.columns([1,1,2])
-        with col1:
-            rounds = st.number_input("Debate rounds", min_value=1, max_value=MAX_ROUNDS, value=DEFAULT_ROUNDS, key="debate_rounds")
-        with col2:
+            st.subheader("Debater Models")
+            model1 = st.selectbox("First debater model", AVAILABLE_MODELS, index=0)
+            model2 = st.selectbox("Second debater model", AVAILABLE_MODELS, index=1)
+
+            st.subheader("Debate Settings")
+            rounds = st.number_input("Number of rounds", min_value=1, max_value=MAX_ROUNDS, value=DEFAULT_ROUNDS)
+
+            st.subheader("Additional Features")
             enable_scoring = st.checkbox("Enable Judging", value=True)
-            enable_fact_checking = st.checkbox("Enable Fact Checking", value=False)
-        with col3:
             judge_model = None
-            fact_checker_model = None
             if enable_scoring:
-                judge_model = st.selectbox("Select judge model", AVAILABLE_MODELS, index=2)
-            if enable_fact_checking:
-                fact_checker_model = st.selectbox("Select fact checker model", AVAILABLE_MODELS, index=2)
+                judge_model = st.selectbox("Judge model", AVAILABLE_MODELS, index=2)
 
-        topic = st.text_input("Enter the topic for debate:", key="debate_topic")
+            enable_fact_checking = st.checkbox("Enable Fact Checking", value=False)
+            fact_checker_model = None
+            if enable_fact_checking:
+                fact_checker_model = st.selectbox("Fact checker model", AVAILABLE_MODELS, index=2)
+
+        # Add instructions in main area
+        st.markdown("""
+        ### How to Use the AI Debate Arena
+
+        1. **Configure Your Debate** (using sidebar):
+           - Choose AI models for both debaters
+           - Set the number of debate rounds
+           - Enable optional judging and fact-checking
+
+        2. **Enter Your Topic** below:
+           - Make it clear and specific
+           - Phrase it as a statement that can be debated
+           - Example: "Social media has a net positive impact on society"
+
+        3. **Start the Debate**:
+           - Click the 'Start Debate' button
+           - Watch as the AI models engage in real-time debate
+           - Follow the discussion through multiple rounds
+        """)
+
+        # Topic input
+        topic = st.text_area("Enter the topic for debate:", height=3, key="debate_topic")
 
         return topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model
 
