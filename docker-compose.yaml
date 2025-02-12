@@ -1,0 +1,10 @@
+services:
+
+  llm-debater:
+
+    container_name: llm-debater
+    build: .
+    ports:
+      - "8505:8501"
+    environment:
+      - OLLAMA_HOST=http://10.27.10.200:11434
