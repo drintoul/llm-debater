@@ -22,6 +22,9 @@ An interactive web application that facilitates structured debates between AI la
   - llama2
   - mistral
   - neural-chat
+  - gemma
+  - phi3
+  - qwen
 
 ## Installation
 
