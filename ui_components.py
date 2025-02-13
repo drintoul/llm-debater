@@ -12,17 +12,19 @@ class DebateUI:
         """
         Convert decimal scores to use ½ symbol.
         Examples:
+        0.5 → ½
         2.5 → 2½
         1.0 → 1
         2.0 - 1.5 → 2 - 1½
         """
-
         # Special case for 0.5
         if score == 0.5:
             return '½'
 
         # Convert to string and replace .5 with ½ and .0 with empty string
-        return str(score).replace('.5', '½').replace('.0', '')
+        formatted = str(score).replace('.5', '½').replace('.0', '')
+
+        return formatted
 
     @staticmethod
     def render_controls():
@@ -77,14 +79,21 @@ class DebateUI:
         with col2:
             st.write("")
             if st.button("Clear", key="clear_button"):
+                # Reset the topic content in session state
                 st.session_state.topic_content = ""
+                # Also clear any previous messages or debate state
+                if "messages" in st.session_state:
+                    del st.session_state.messages
+                if "current_round" in st.session_state:
+                    del st.session_state.current_round
 
         with col1:
+            # Use key to force re-render when content changes
             topic = st.text_area(
                 "Enter the topic for debate:",
                 height=3,
                 value=st.session_state.topic_content,
-                key="topic_input"
+                key="topic_input_unique"
             )
 
         return topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model
@@ -187,17 +196,3 @@ class DebateUI:
              </div>''',
             unsafe_allow_html=True
         )
-
-    @staticmethod
-    def display_round_score(pro_wins, con_wins):
-        """
-        Display the current round score with ½ symbol
-        """
-        pro_score = DebateUI.format_score(pro_wins)
-        con_score = DebateUI.format_score(con_wins)
-
-        st.markdown(f'''<div class="round-score">
-            <span class="score-pro">Pro {pro_score}</span>
-            <span class="score-divider">-</span>
-            <span class="score-con">{con_score} Con</span>
-        </div>''', unsafe_allow_html=True)

@@ -9,22 +9,6 @@ def initialize_session_state():
         st.session_state.messages = []
         st.session_state.current_round = 0
 
-def format_score(score):
-    """
-    Convert decimal scores to use ½ symbol.
-    Examples:
-    2.5 → 2½
-    1.0 → 1
-    2.0 - 1.5 → 2 - 1½
-    """
-
-    # Special case for 0.5
-    if score == 0.5:
-        return '½'
-
-    # Convert to string and replace .5 with ½ and .0 with empty string
-    return str(score).replace('.5', '½').replace('.0', '')
-
 def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checking=False, fact_checker_model=None):
     if not topic:
         return
@@ -59,9 +43,9 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
                 st.write("")
                 st.write("#### Score After Round 1")
                 st.markdown(f'''<div class="round-score">
-                    <span class="score-pro">Pro {format_score(debate.pro_wins)}</span>
+                    <span class="score-pro">Pro {DebateUI.format_score(debate.pro_wins)}</span>
                     <span class="score-divider">-</span>
-                    <span class="score-con">{format_score(debate.con_wins)} Con</span>
+                    <span class="score-con">{DebateUI.format_score(debate.con_wins)} Con</span>
                 </div>''', unsafe_allow_html=True)
 
         # Subsequent rounds
@@ -93,9 +77,9 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
                     st.write("")
                     st.write(f"#### Score After Round {round}")
                     st.markdown(f'''<div class="round-score">
-                        <span class="score-pro">Pro {format_score(debate.pro_wins)}</span>
+                        <span class="score-pro">Pro {DebateUI.format_score(debate.pro_wins)}</span>
                         <span class="score-divider">-</span>
-                        <span class="score-con">{format_score(debate.con_wins)} Con</span>
+                        <span class="score-con">{DebateUI.format_score(debate.con_wins)} Con</span>
                     </div>''', unsafe_allow_html=True)
 
             st.session_state.current_round = round
@@ -123,7 +107,7 @@ def main():
         topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model = DebateUI.render_controls()
 
         if st.button("Start Debate"):
-            st.session_state.last_topic = topic
+            st.session_state.topic_content = topic
             start_debate(
                 topic,
                 model1,
