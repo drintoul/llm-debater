@@ -5,7 +5,7 @@ An interactive web application that facilitates structured debates between AI la
 ## Key Features
 
 - **AI vs AI Debates**: Watch different language models engage in structured debates
-- **Multiple Model Support**: Choose from various models for debaters
+- **Multiple Model Support**: Choose from various models (llama2, mistral, neural-chat) for debaters
 - **Customizable Format**: Configure debates from 1-5 rounds
 - **Optional Judging**: Enable a third AI model to evaluate and declare a winner
 - **Fact Checking**: Optional real-time fact-checking of debate statements
@@ -23,6 +23,7 @@ An interactive web application that facilitates structured debates between AI la
   - mistral
   - neural-chat
   - gemma
+  - phi3
   - qwen
 
 ## Installation

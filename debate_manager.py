@@ -116,35 +116,57 @@ class DebateManager:
 
         # Add reasoning from judge model
         if winner_side:
+            # First get a concise summary of winning arguments
+            summary_prompt = f"""Review the entire debate about '{self.topic}' and provide a two-sentence summary of why the {winner_side} side's arguments were most compelling. Focus only on their strongest points and most persuasive reasoning.
+
+            Your response must be exactly two sentences, starting with "The {winner_side} side effectively argued that..."
+            Do not reference debate points or scoring."""
+
+            winning_summary = self.llm_service.get_response(summary_prompt, self.judge_model)
+
+            # Then get the detailed analysis
             prompt = f"""As an impartial judge, analyze the entire debate about '{self.topic}'.
-            Provide a comprehensive explanation for why the {winner_side} side was more persuasive.
+                Following this concise summary of the winning arguments:
+                {winning_summary}
 
-            Your explanation should:
-            1. Highlight the strongest and most compelling arguments made by the {winner_side} side
-            2. Explain specific weaknesses in the {loser_side} side's argumentation
-            3. Demonstrate how the {winner_side} side more effectively addressed the core issues of the debate
-            4. Explain why the {winner_side} side's reasoning was ultimately more convincing
+                Provide a comprehensive explanation for why the {winner_side} side was more persuasive.
 
-            Be specific, analytical, and provide clear reasoning that goes beyond simply counting points.
+                Your explanation should:
+                1. Highlight the strongest and most compelling arguments made by the {winner_side} side
+                2. Explain specific weaknesses in the {loser_side} side's argumentation
+                3. Demonstrate how the {winner_side} side more effectively addressed the core issues of the debate
+                4. Explain why the {winner_side} side's reasoning was ultimately more convincing
 
-            Format your response starting with: "{verdict_start} because..."
-            Do not simply reference that one side had more points.
-            Provide a substantive, insightful analysis of the debate's outcome."""
+                Be specific, analytical, and provide clear reasoning that goes beyond simply counting points.
+
+                Format your response starting with: "{verdict_start} because..."
+                Do not simply reference that one side had more points.
+                Provide a substantive, insightful analysis of the debate's outcome."""
         else:
-            # Tie scenario
+            # For ties, get a balanced two-sentence summary
+            summary_prompt = f"""Review the entire debate about '{self.topic}' and provide a two-sentence summary explaining why both sides presented equally compelling arguments. Focus on the key points that made this debate so balanced.
+
+            Your response must be exactly two sentences, starting with "Both sides presented compelling arguments, with..."
+            Do not reference debate points or scoring."""
+
+            tie_summary = self.llm_service.get_response(summary_prompt, self.judge_model)
+
             prompt = f"""As an impartial judge, analyze the entire debate about '{self.topic}'.
-            Provide a comprehensive explanation for why the debate resulted in a tie.
+                Following this concise summary of the balanced arguments:
+                {tie_summary}
 
-            Your explanation should:
-            1. Highlight the equally strong arguments from both sides
-            2. Explain how both Pro and Con sides presented equally compelling points
-            3. Discuss the nuanced and balanced nature of the debate topic
-            4. Demonstrate why neither side could definitively prove their position
+                Provide a comprehensive explanation for why the debate resulted in a tie.
 
-            Be specific, analytical, and provide clear reasoning for the tie.
+                Your explanation should:
+                1. Highlight the equally strong arguments from both sides
+                2. Explain how both Pro and Con sides presented equally compelling points
+                3. Discuss the nuanced and balanced nature of the debate topic
+                4. Demonstrate why neither side could definitively prove their position
 
-            Format your response starting with: "{verdict_start} because..."
-            Provide a substantive, nuanced analysis of the debate's balanced outcome."""
+                Be specific, analytical, and provide clear reasoning for the tie.
+
+                Format your response starting with: "{verdict_start} because..."
+                Provide a substantive, nuanced analysis of the debate's balanced outcome."""
 
         # Get judge's reasoning
         judge_reasoning = self.llm_service.get_response(prompt, self.judge_model)

@@ -2,6 +2,15 @@ import os
 
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://10.27.10.200:11434')
 AVAILABLE_MODELS = ["llama2", "mistral", "neural-chat", "gemma", "qwen"]
+
+MODEL_CUTOFF_DATES = {
+    "llama2": "July 2023",
+    "mistral": "June 2023",
+    "neural-chat": "June 2023",
+    "gemma": "July 2023",
+    "qwen": "April 2023"
+}
+
 MAX_ROUNDS = 5
 DEFAULT_ROUNDS = 3
 

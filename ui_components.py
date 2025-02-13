@@ -1,6 +1,6 @@
 import streamlit as st
 import logging
-from config import AVAILABLE_MODELS, MAX_ROUNDS, DEFAULT_ROUNDS
+from config import AVAILABLE_MODELS, MAX_ROUNDS, DEFAULT_ROUNDS, MODEL_CUTOFF_DATES
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +49,11 @@ class DebateUI:
             fact_checker_model = None
             if enable_fact_checking:
                 fact_checker_model = st.selectbox("Fact checker model", AVAILABLE_MODELS, index=0)
+
+            # Add model training cutoff dates at bottom of sidebar
+            st.markdown("---")
+            cutoff_table = "<small>Training Cutoff Dates:<br>" + "<br>".join([f"{model}: {MODEL_CUTOFF_DATES[model]}" for model in AVAILABLE_MODELS]) + "</small>"
+            st.markdown(cutoff_table, unsafe_allow_html=True)
 
         # Add instructions in main area
         with st.expander("How to Use"):
@@ -175,11 +180,20 @@ class DebateUI:
         else:
             score_html = ""
 
-        # Clean verdict text to remove score and create explanation
+        # Clean verdict text to remove score
         verdict_text = verdict.replace(score, "").strip()
 
-        # More robust explanation extraction
+        # Extract and format the two-sentence summary
+        summary = ""
         explanation = verdict_text
+
+        # Look for the summary in the response (it will be the first two sentences)
+        sentences = verdict_text.split('. ')
+        if len(sentences) >= 2:
+            summary = '. '.join(sentences[:2]) + '.'
+            explanation = '. '.join(sentences[2:]).strip()
+            if explanation.startswith(' because'):
+                explanation = explanation[8:].strip()  # Remove 'because' from the start
 
         # Adjust outcome and verdict class based on text
         if "pro wins" in verdict_lower:
@@ -196,6 +210,7 @@ class DebateUI:
             f'''<div class="{final_classes}">
                 <div class="verdict-outcome">🏆 {outcome}</div>
                 {score_html}
+                <div class="verdict-summary" style="font-size: 1.2em; margin-bottom: 15px; font-weight: 500;">{summary}</div>
                 <div class="verdict-explanation">{explanation}</div>
              </div>''',
             unsafe_allow_html=True
