@@ -3,6 +3,15 @@ from config import OLLAMA_HOST
 
 class LLMService:
     @staticmethod
+    def check_server_health():
+        """Check if the Ollama server is accessible"""
+        try:
+            response = requests.get(f"{OLLAMA_HOST}/api/tags")
+            return response.status_code == 200
+        except requests.RequestException:
+            return False
+
+    @staticmethod
     def get_response(prompt, model):
         url = f"{OLLAMA_HOST}/api/generate"
         data = {

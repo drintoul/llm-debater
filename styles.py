@@ -1,7 +1,12 @@
 CUSTOM_CSS = """
 <style>
-/* Previous styles remain the same */
+/* Base styles */
+body {
+    color: #1a1a1a;
+    background-color: #f8f9fa;
+}
 
+/* Final verdict styles */
 .final-verdict {
     margin: 20px auto;
     padding: 20px;
@@ -29,8 +34,14 @@ CUSTOM_CSS = """
 .verdict-explanation {
     font-size: 1.1em;
     line-height: 1.5;
-    color: #333;
+    color: #1a1a1a;
     padding: 10px;
+}
+
+.verdict-summary {
+    color: #1a1a1a;
+    font-size: 1.1em;
+    margin-bottom: 15px;
 }
 
 .verdict-pro .verdict-outcome {
@@ -50,16 +61,18 @@ CUSTOM_CSS = """
     padding: 15px;
     margin: 10px 0;
     border-radius: 8px;
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .pro-message {
     border-left: 4px solid #0066cc;
+    background-color: #f8f9ff;
 }
 
 .con-message {
     border-left: 4px solid #cc0000;
+    background-color: #fff8f8;
 }
 
 /* Fact check styles */
@@ -69,19 +82,24 @@ CUSTOM_CSS = """
     padding: 10px;
     border-radius: 6px;
     font-size: 0.9em;
-    background-color: #f8f9fa;
+    background-color: #ffffff;
+    color: #1a1a1a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .fact-check-verified {
     border-left: 4px solid #28a745;
+    background-color: #f8fff8;
 }
 
 .fact-check-partial {
     border-left: 4px solid #ffc107;
+    background-color: #fffff8;
 }
 
 .fact-check-unverified {
     border-left: 4px solid #dc3545;
+    background-color: #fff8f8;
 }
 
 /* Round score styles */
@@ -93,8 +111,9 @@ CUSTOM_CSS = """
     margin: 15px 0;
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border: 1px solid #dee2e6;
+    color: #1a1a1a;
 }
 
 .score-pro {
@@ -106,8 +125,28 @@ CUSTOM_CSS = """
 }
 
 .score-divider {
-    color: #666;
+    color: #666666;
     margin: 0 10px;
+}
+
+/* Server error styles */
+.server-error {
+    background-color: #fef2f2;
+    border: 2px solid #dc2626;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    color: #991b1b;
+}
+
+.server-error h3 {
+    margin: 0 0 10px 0;
+    color: #dc2626;
+}
+
+.server-error ul {
+    margin: 10px 0;
+    padding-left: 20px;
 }
 </style>
 """

@@ -1,6 +1,7 @@
 import streamlit as st
 import logging
-from config import AVAILABLE_MODELS, MAX_ROUNDS, DEFAULT_ROUNDS, MODEL_CUTOFF_DATES
+from config import AVAILABLE_MODELS, MAX_ROUNDS, DEFAULT_ROUNDS, MODEL_CUTOFF_DATES, OLLAMA_HOST
+from llm_service import LLMService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +28,28 @@ class DebateUI:
         return formatted
 
     @staticmethod
+    def check_server_status():
+        """Check if the Ollama server is available and display status"""
+        llm_service = LLMService()
+        server_status = llm_service.check_server_health()
+
+        if not server_status:
+            st.sidebar.error(f"""⚠️ Ollama Server Offline
+
+            Cannot connect to {OLLAMA_HOST}
+
+            Please ensure:
+            - Ollama is running and accessible
+            - OLLAMA_HOST is set correctly
+            - Required models are installed""")
+
+        return server_status
+
+    @staticmethod
     def render_controls():
+        # Check server status immediately on startup
+        server_online = DebateUI.check_server_status()
+
         # Move configuration controls to sidebar
         with st.sidebar:
             st.header("Debate Configuration")
@@ -105,7 +127,7 @@ class DebateUI:
                 key=st.session_state.get('topic_input_unique', 'topic_input_default')
             )
 
-        return topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model
+        return topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model, server_online
 
     @staticmethod
     def display_message(content, is_pro=True, model="", is_judge=False, fact_check=None):
