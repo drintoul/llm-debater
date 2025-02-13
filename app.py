@@ -27,14 +27,14 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
         st.session_state.messages.append({"role": "LLM1", "content": pro_response, "model": model1, "fact_check": fact_check})
         DebateUI.display_message(pro_response, True, model1, fact_check=fact_check)
 
-#        sleep(1)
+        sleep(1)
 
         con_response = debate.get_con_opening()
         fact_check = debate.fact_check_statement(con_response) if enable_fact_checking else None
         st.session_state.messages.append({"role": "LLM2", "content": con_response, "model": model2, "fact_check": fact_check})
         DebateUI.display_message(con_response, False, model2, fact_check=fact_check)
 
-#        sleep(1)
+        sleep(1)
 
         # Evaluate opening round if judging is enabled
         if judge_model:
@@ -60,7 +60,7 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
             st.session_state.messages.append({"role": "LLM1", "content": pro_response, "model": model1, "fact_check": fact_check})
             DebateUI.display_message(pro_response, True, model1, fact_check=fact_check)
 
-#            sleep(1)
+            sleep(1)
 
             # Con's turn
             con_response = debate.get_con_argument(pro_response)
@@ -68,7 +68,7 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
             st.session_state.messages.append({"role": "LLM2", "content": con_response, "model": model2, "fact_check": fact_check})
             DebateUI.display_message(con_response, False, model2, fact_check=fact_check)
 
-#            sleep(1)
+            sleep(1)
 
             # Evaluate round if judging is enabled
             if judge_model:
@@ -106,7 +106,7 @@ def main():
     with st.container():
         topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model = DebateUI.render_controls()
 
-        if st.button("Start Debate"):
+        if st.button("Start Debate", type="primary"):
             st.session_state.topic_content = topic
             start_debate(
                 topic,

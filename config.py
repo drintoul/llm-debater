@@ -6,5 +6,5 @@ MAX_ROUNDS = 5
 DEFAULT_ROUNDS = 3
 
 # Fact checking configuration
-FACT_CHECK_MAX_TOKENS = 200  # Maximum tokens for fact check responses
-FACT_CHECK_DETAILED = True   # Whether to provide detailed fact check explanations
+FACT_CHECK_MAX_TOKENS = 100  # Maximum tokens for fact check responses
+FACT_CHECK_DETAILED = False   # Whether to provide detailed fact check explanations

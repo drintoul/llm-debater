@@ -78,7 +78,7 @@ class DebateUI:
         # Handle clear button click before creating text area
         with col2:
             st.write("")
-            if st.button("Clear", key="clear_button"):
+            if st.button("Clear", type="secondary", key="clear_button"):
                 # Reset the topic content in session state
                 st.session_state.topic_content = ""
                 # Explicitly set the key to force re-render
@@ -89,6 +89,7 @@ class DebateUI:
                     del st.session_state.messages
                 if "current_round" in st.session_state:
                     del st.session_state.current_round
+                st.rerun()
 
         with col1:
             # Use dynamic key to force re-render when cleared
