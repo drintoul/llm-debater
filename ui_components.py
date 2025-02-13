@@ -81,6 +81,9 @@ class DebateUI:
             if st.button("Clear", key="clear_button"):
                 # Reset the topic content in session state
                 st.session_state.topic_content = ""
+                # Explicitly set the key to force re-render
+                st.session_state.topic_input_unique = "clear_" + str(st.session_state.get('topic_clear_counter', 0))
+                st.session_state.topic_clear_counter = st.session_state.get('topic_clear_counter', 0) + 1
                 # Also clear any previous messages or debate state
                 if "messages" in st.session_state:
                     del st.session_state.messages
@@ -88,12 +91,12 @@ class DebateUI:
                     del st.session_state.current_round
 
         with col1:
-            # Use key to force re-render when content changes
+            # Use dynamic key to force re-render when cleared
             topic = st.text_area(
                 "Enter the topic for debate:",
                 height=3,
                 value=st.session_state.topic_content,
-                key="topic_input_unique"
+                key=st.session_state.get('topic_input_unique', 'topic_input_default')
             )
 
         return topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model
