@@ -29,8 +29,8 @@ An interactive web application that facilitates structured debates between AI la
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ai-debate-arena.git
-cd ai-debate-arena
+git clone https://github.com/drintoul/llm-debater.git
+cd llm-debater
 ```
 
 2. Configure Ollama host in `docker-compose.yaml`:
