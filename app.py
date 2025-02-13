@@ -9,6 +9,22 @@ def initialize_session_state():
         st.session_state.messages = []
         st.session_state.current_round = 0
 
+def format_score(score):
+    """
+    Convert decimal scores to use ½ symbol.
+    Examples:
+    2.5 → 2½
+    1.0 → 1
+    2.0 - 1.5 → 2 - 1½
+    """
+
+    # Special case for 0.5
+    if score == 0.5:
+        return '½'
+
+    # Convert to string and replace .5 with ½ and .0 with empty string
+    return str(score).replace('.5', '½').replace('.0', '')
+
 def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checking=False, fact_checker_model=None):
     if not topic:
         return
@@ -19,8 +35,7 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
     debate = DebateManager(topic, model1, model2, judge_model, fact_checker_model if enable_fact_checking else None)
 
     # Container for real-time debate display
-    debate_container = st.empty()
-    with debate_container.container():
+    with st.container():
         # Opening statements
         st.write("### Opening Statements")
         pro_response = debate.get_pro_opening()
@@ -36,6 +51,18 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
         DebateUI.display_message(con_response, False, model2, fact_check=fact_check)
 
         sleep(1)
+
+        # Evaluate opening round if judging is enabled
+        if judge_model:
+            round_result = debate.evaluate_round(pro_response, con_response)
+            if round_result:
+                st.write("")
+                st.write("#### Score After Round 1")
+                st.markdown(f'''<div class="round-score">
+                    <span class="score-pro">Pro {format_score(debate.pro_wins)}</span>
+                    <span class="score-divider">-</span>
+                    <span class="score-con">{format_score(debate.con_wins)} Con</span>
+                </div>''', unsafe_allow_html=True)
 
         # Subsequent rounds
         for round in range(2, rounds + 1):
@@ -59,16 +86,30 @@ def start_debate(topic, model1, model2, rounds, judge_model, enable_fact_checkin
 
             sleep(1)
 
+            # Evaluate round if judging is enabled
+            if judge_model:
+                round_result = debate.evaluate_round(pro_response, con_response)
+                if round_result:
+                    st.write("")
+                    st.write(f"#### Score After Round {round}")
+                    st.markdown(f'''<div class="round-score">
+                        <span class="score-pro">Pro {format_score(debate.pro_wins)}</span>
+                        <span class="score-divider">-</span>
+                        <span class="score-con">{format_score(debate.con_wins)} Con</span>
+                    </div>''', unsafe_allow_html=True)
+
             st.session_state.current_round = round
 
-    # Final verdict
-    if judge_model:
-        pro_final = next((msg["content"] for msg in reversed(st.session_state.messages) if msg["role"] == "LLM1"), None)
-        con_final = next((msg["content"] for msg in reversed(st.session_state.messages) if msg["role"] == "LLM2"), None)
-        verdict = debate.get_final_verdict(pro_final, con_final)
-        return verdict
+        # Final verdict
+        if judge_model:
+            pro_final = next((msg["content"] for msg in reversed(st.session_state.messages) if msg["role"] == "LLM1"), None)
+            con_final = next((msg["content"] for msg in reversed(st.session_state.messages) if msg["role"] == "LLM2"), None)
+            verdict = debate.get_final_verdict(pro_final, con_final)
 
-    return None
+            st.write("")
+            st.write("---")
+            st.write("### 🏆 Final Verdict")
+            DebateUI.display_verdict(verdict)
 
 def main():
     st.set_page_config(page_title="LLM Debater 🚨")
@@ -81,9 +122,9 @@ def main():
     with st.container():
         topic, model1, model2, rounds, enable_scoring, judge_model, enable_fact_checking, fact_checker_model = DebateUI.render_controls()
 
-        if st.button("Start Debate") or (topic and topic != st.session_state.get("last_topic", "")):
+        if st.button("Start Debate"):
             st.session_state.last_topic = topic
-            verdict = start_debate(
+            start_debate(
                 topic,
                 model1,
                 model2,
@@ -92,8 +133,6 @@ def main():
                 enable_fact_checking,
                 fact_checker_model
             )
-            if verdict:
-                DebateUI.display_verdict(verdict)
 
 if __name__ == "__main__":
     main()
