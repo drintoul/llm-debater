@@ -1,7 +1,7 @@
 import os
 
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://10.27.10.200:11434')
-AVAILABLE_MODELS = ["llama2", "mistral", "neural-chat", "gemma", "phi3", "qwen"]
+AVAILABLE_MODELS = ["llama2", "mistral", "neural-chat", "gemma", "qwen"]
 MAX_ROUNDS = 5
 DEFAULT_ROUNDS = 3
 
