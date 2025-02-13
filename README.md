@@ -15,7 +15,7 @@ An interactive AI debate platform that enables structured debates between differ
 ## Prerequisites
 
 - Python 3.9+
-- Docker (optional)
+- Docker
 - Ollama server running with supported models
 
 ## Installation
@@ -24,7 +24,7 @@ An interactive AI debate platform that enables structured debates between differ
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/drintoul/llm-debater.git
 cd llm-debater
 ```
 
