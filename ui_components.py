@@ -75,7 +75,7 @@ class DebateUI:
 
         # Initialize default topic in session state if not present
         if "topic_content" not in st.session_state:
-            st.session_state.topic_content = "Social media has a net positive impact on society"
+            st.session_state.topic_content = "Social media has a net positive impact on society."
 
         # Topic input and clear button in the same column layout
         col1, col2 = st.columns([4, 1])  # 4:1 ratio to make text area wider than button
@@ -210,7 +210,7 @@ class DebateUI:
             f'''<div class="{final_classes}">
                 <div class="verdict-outcome">🏆 {outcome}</div>
                 {score_html}
-                <div class="verdict-summary" style="font-size: 1.2em; margin-bottom: 15px; font-weight: 500;">{summary}</div>
+                <div class="verdict-summary">{summary}</div>
                 <div class="verdict-explanation">{explanation}</div>
              </div>''',
             unsafe_allow_html=True

@@ -117,10 +117,10 @@ class DebateManager:
         # Add reasoning from judge model
         if winner_side:
             # First get a concise summary of winning arguments
-            summary_prompt = f"""Review the entire debate about '{self.topic}' and provide a two-sentence summary of why the {winner_side} side's arguments were most compelling. Focus only on their strongest points and most persuasive reasoning.
+            summary_prompt = f"""Review the entire debate about '{self.topic}' and provide a two-sentence summary focusing on the specific key arguments that won the debate for the {winner_side} side. Explain what concrete points or evidence they presented.
 
-            Your response must be exactly two sentences, starting with "The {winner_side} side effectively argued that..."
-            Do not reference debate points or scoring."""
+            Your response must be exactly two sentences, starting with "The {winner_side} side won by demonstrating that..."
+            Focus on the specific content of their arguments, not how well they were expressed."""
 
             winning_summary = self.llm_service.get_response(summary_prompt, self.judge_model)
 
@@ -144,10 +144,10 @@ class DebateManager:
                 Provide a substantive, insightful analysis of the debate's outcome."""
         else:
             # For ties, get a balanced two-sentence summary
-            summary_prompt = f"""Review the entire debate about '{self.topic}' and provide a two-sentence summary explaining why both sides presented equally compelling arguments. Focus on the key points that made this debate so balanced.
+            summary_prompt = f"""Review the entire debate about '{self.topic}' and provide a two-sentence summary of the specific key points from each side that resulted in a tie. Explain what concrete evidence or arguments each side presented.
 
-            Your response must be exactly two sentences, starting with "Both sides presented compelling arguments, with..."
-            Do not reference debate points or scoring."""
+            Your response must be exactly two sentences, starting with "The debate reached a tie as the Pro side showed that..."
+            Focus on the actual content of their arguments, not how well they were expressed."""
 
             tie_summary = self.llm_service.get_response(summary_prompt, self.judge_model)
 
@@ -171,9 +171,38 @@ class DebateManager:
         # Get judge's reasoning
         judge_reasoning = self.llm_service.get_response(prompt, self.judge_model)
 
-        # Ensure the verdict matches the actual score
+        # Check if we got a generic/vague response
+        generic_phrases = [
+            "arguments presented were carefully evaluated",
+            "revealing the complexity",
+            "carefully considered",
+            "thoroughly analyzed",
+            "after careful consideration",
+            "after thorough analysis",
+            "well-articulated",
+            "effectively presented",
+            "strongly argued"
+        ]
+
+        if any(phrase in judge_reasoning.lower() for phrase in generic_phrases):
+            # Try again with a more forceful prompt demanding specifics
+            retry_prompt = f"""Provide a specific verdict for this debate about '{self.topic}'. 
+
+            You MUST include concrete details about the exact arguments that determined the outcome.
+            AVOID generic phrases about "careful evaluation" or "complexity".
+            Instead, state the SPECIFIC concepts, evidence, or reasoning that made {winner_side if winner_side else 'each side'} {'win' if winner_side else 'equal'}.
+
+            Format your response starting with: "{verdict_start} because..."
+
+            Example of BAD response: "because the arguments were carefully evaluated and well-presented"
+            Example of GOOD response: "because they demonstrated that [specific argument/evidence] and proved that [specific point]"
+            """
+
+            judge_reasoning = self.llm_service.get_response(retry_prompt, self.judge_model)
+
+        # Final fallback if we still have problems
         if not judge_reasoning.lower().startswith(verdict_start.lower()):
-            # If judge's response doesn't match score, construct a generic response
-            judge_reasoning = f"{verdict_start} because the arguments presented were carefully evaluated, revealing the complexity of the debate topic."
+            # Instead of a generic fallback, construct one that at least references the topic
+            judge_reasoning = f"{verdict_start} because they provided stronger evidence about {self.topic}."
 
         return judge_reasoning

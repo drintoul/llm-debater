@@ -1,13 +1,13 @@
 import os
 
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://10.27.10.200:11434')
-AVAILABLE_MODELS = ["llama2", "mistral", "neural-chat", "gemma", "qwen"]
+AVAILABLE_MODELS = ["gemma", "llama2", "mistral", "neural-chat", "qwen"]
 
 MODEL_CUTOFF_DATES = {
+    "gemma": "July 2023",
     "llama2": "July 2023",
     "mistral": "June 2023",
     "neural-chat": "June 2023",
-    "gemma": "July 2023",
     "qwen": "April 2023"
 }
 

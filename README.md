@@ -19,11 +19,10 @@ An interactive web application that facilitates structured debates between AI la
 - Ollama server for LLM inference
 - Python 3.9+ (for local development)
 - Required Ollama models:
+  - gemma (default)
   - llama2
   - mistral
   - neural-chat
-  - gemma
-  - phi3
   - qwen
 
 ## Installation
