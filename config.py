@@ -1,19 +1,17 @@
+import json
 import os
 
-OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://10.27.10.200:11434')
-AVAILABLE_MODELS = ["gemma2:9b", "llama2:13b", "mistral:7b", "neural-chat:7b", "qwen2.5:14b"]
+from dotenv import load_dotenv
 
-MODEL_CUTOFF_DATES = {
-    "gemma2:9b": "July 2023",
-    "llama2:13b": "July 2023",
-    "mistral:7b": "June 2023",
-    "neural-chat:7b": "June 2023",
-    "qwen2.5:14b": "April 2023"
-}
+load_dotenv()
 
-MAX_ROUNDS = 5
-DEFAULT_ROUNDS = 3
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+AVAILABLE_MODELS = [m.strip() for m in os.getenv("AVAILABLE_MODELS", "").split(",") if m.strip()]
 
-# Fact checking configuration
-FACT_CHECK_MAX_TOKENS = 100  # Maximum tokens for fact check responses
-FACT_CHECK_DETAILED = False   # Whether to provide detailed fact check explanations
+try:
+    MODEL_CUTOFF_DATES = json.loads(os.getenv("MODEL_CUTOFF_DATES", "{}"))
+except json.JSONDecodeError:
+    MODEL_CUTOFF_DATES = {}
+
+MAX_ROUNDS = int(os.getenv("MAX_ROUNDS", "5"))
+DEFAULT_ROUNDS = int(os.getenv("DEFAULT_ROUNDS", "3"))

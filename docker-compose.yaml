@@ -5,6 +5,9 @@ services:
     container_name: llm-debater
     build: .
     ports:
-      - "8505:8501"
-    environment:
-      - OLLAMA_HOST=http://10.27.10.200:11434
+      - "${APP_PORT:-8505}:8501"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: streamlit run app.py --server.runOnSave=true --server.fileWatcherType=poll

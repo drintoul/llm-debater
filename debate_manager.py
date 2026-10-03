@@ -1,43 +1,67 @@
-from time import sleep
+from config import MAX_ROUNDS
 from llm_service import LLMService
 
 class DebateManager:
-    def __init__(self, topic, model1, model2, judge_model=None, fact_checker_model=None):
+    def __init__(self, topic, model1, model2, judge_model=None, fact_checker_model=None, response_length="sentence"):
         self.topic = topic
         self.model1 = model1  # Always Pro side
         self.model2 = model2  # Always Con side
         self.judge_model = judge_model
         self.fact_checker_model = fact_checker_model
+        self.response_length = response_length  # "sentence" or "paragraph"
+        self.arg_unit = "single-sentence" if response_length == "sentence" else "short-paragraph"
         self.llm_service = LLMService()
         self.pro_wins = 0
         self.con_wins = 0
         self.rounds_tracked = 0  # Track number of rounds evaluated
 
-    def get_pro_opening(self):
-        pro_prompt = f"""You will now provide an argument FOR this statement: {self.topic}
-        You are representing the PRO side of this debate. Provide your strongest single-sentence argument IN FAVOR of this statement.
+    def _pro_opening_prompt(self):
+        return f"""You will now provide an argument FOR this statement: {self.topic}
+        You are representing the PRO side of this debate. Provide your strongest {self.arg_unit} argument IN FAVOR of this statement.
         Make it concise but compelling, arguing that the statement is TRUE."""
-        return self.llm_service.get_response(pro_prompt, self.model1)
+
+    def _con_opening_prompt(self):
+        return f"""You will now provide an argument AGAINST this statement: {self.topic}
+        You are representing the CON side of this debate. Provide your strongest {self.arg_unit} argument AGAINST this statement.
+        Make it concise but compelling, arguing that the statement is FALSE."""
+
+    def _pro_argument_prompt(self, last_con_msg, transcript=None):
+        history = f"Debate so far:\n{transcript}\n\n" if transcript else ""
+        return f"""You are on the PRO side of this debate about: '{self.topic}'
+        {history}Your opponent (CON side) just argued: '{last_con_msg}'
+        Provide a {self.arg_unit} counter-argument that SUPPORTS the original statement.
+        Directly address your opponent's argument, introduce new reasoning instead of repeating your earlier points, and maintain your pro stance."""
+
+    def _con_argument_prompt(self, last_pro_msg, transcript=None):
+        history = f"Debate so far:\n{transcript}\n\n" if transcript else ""
+        return f"""You are on the CON side of this debate about: '{self.topic}'
+        {history}Your opponent (PRO side) just argued: '{last_pro_msg}'
+        Provide a {self.arg_unit} counter-argument that OPPOSES the original statement.
+        Directly address your opponent's argument, introduce new reasoning instead of repeating your earlier points, and maintain your con stance."""
+
+    def get_pro_opening(self):
+        return self.llm_service.get_response(self._pro_opening_prompt(), self.model1, length=self.response_length)
 
     def get_con_opening(self):
-        con_prompt = f"""You will now provide an argument AGAINST this statement: {self.topic}
-        You are representing the CON side of this debate. Provide your strongest single-sentence argument AGAINST this statement.
-        Make it concise but compelling, arguing that the statement is FALSE."""
-        return self.llm_service.get_response(con_prompt, self.model2)
+        return self.llm_service.get_response(self._con_opening_prompt(), self.model2, length=self.response_length)
 
-    def get_pro_argument(self, last_con_msg):
-        pro_prompt = f"""You are on the PRO side of this debate about: '{self.topic}'
-        Your opponent (CON side) just argued: '{last_con_msg}'
-        Provide a single, strong counter-argument that SUPPORTS the original statement.
-        Directly address your opponent's argument while maintaining your pro stance."""
-        return self.llm_service.get_response(pro_prompt, self.model1)
+    def get_pro_argument(self, last_con_msg, transcript=None):
+        return self.llm_service.get_response(self._pro_argument_prompt(last_con_msg, transcript), self.model1, length=self.response_length)
 
-    def get_con_argument(self, last_pro_msg):
-        con_prompt = f"""You are on the CON side of this debate about: '{self.topic}'
-        Your opponent (PRO side) just argued: '{last_pro_msg}'
-        Provide a single, strong counter-argument that OPPOSES the original statement.
-        Directly address your opponent's argument while maintaining your con stance."""
-        return self.llm_service.get_response(con_prompt, self.model2)
+    def get_con_argument(self, last_pro_msg, transcript=None):
+        return self.llm_service.get_response(self._con_argument_prompt(last_pro_msg, transcript), self.model2, length=self.response_length)
+
+    def stream_pro_opening(self):
+        return self.llm_service.stream_response(self._pro_opening_prompt(), self.model1, length=self.response_length)
+
+    def stream_con_opening(self):
+        return self.llm_service.stream_response(self._con_opening_prompt(), self.model2, length=self.response_length)
+
+    def stream_pro_argument(self, last_con_msg, transcript=None):
+        return self.llm_service.stream_response(self._pro_argument_prompt(last_con_msg, transcript), self.model1, length=self.response_length)
+
+    def stream_con_argument(self, last_pro_msg, transcript=None):
+        return self.llm_service.stream_response(self._con_argument_prompt(last_pro_msg, transcript), self.model2, length=self.response_length)
 
     def fact_check_statement(self, statement):
         if not self.fact_checker_model:
@@ -56,7 +80,7 @@ class DebateManager:
         PARTIALLY VERIFIED: While the basic premise is true, some details are inaccurate...
         UNVERIFIED: This claim lacks sufficient evidence..."""
 
-        response = self.llm_service.get_response(prompt, self.fact_checker_model)
+        response = self.llm_service.get_response(prompt, self.fact_checker_model, length="sentence", fact_check=True)
 
         # Validate and fix response format if needed
         if not any(response.startswith(label) for label in ["VERIFIED:", "PARTIALLY VERIFIED:", "UNVERIFIED:"]):
@@ -70,30 +94,43 @@ class DebateManager:
             return None
 
         # Prevent scoring more rounds than specified
-        if self.rounds_tracked >= 5:  # Assuming max 5 rounds
+        if self.rounds_tracked >= MAX_ROUNDS:
             return None
 
-        prompt = f"""As an impartial judge, evaluate these arguments about '{self.topic}':
+        prompt = f"""As an impartial judge, decide which side argued more persuasively about '{self.topic}':
         Pro's argument (supporting the statement): {pro_arg}
         Con's argument (opposing the statement): {con_arg}
 
-        Who won this round? Respond with exactly one of: PRO, CON, or TIE."""
+        Weigh logical soundness, use of evidence, and how directly each side answered the other — not confidence or verbosity.
 
-        result = self.llm_service.get_response(prompt, self.judge_model)
+        Respond in this exact format:
+        WINNER — one-sentence explanation
+        where WINNER is exactly one of: PRO, CON, TIE
 
-        # Update scores based on round result
-        if "PRO" in result.upper():
+        Example: "CON — Con directly refuted Pro's claim with a specific counterexample.\""""
+
+        result = self.llm_service.get_response(prompt, self.judge_model).strip()
+
+        # Score based on the winner, read as the first word of the response
+        first_word = result.split()[0].strip("—-:.,").upper() if result else ""
+        self.rounds_tracked += 1
+
+        if first_word == "PRO":
             self.pro_wins += 1
-        elif "CON" in result.upper():
+        elif first_word == "CON":
             self.con_wins += 1
-        else:  # TIE case
+        elif first_word == "TIE":
             self.pro_wins += 0.5
             self.con_wins += 0.5
+        else:
+            # Surface the failure instead of silently counting a tie
+            return f"⚠️ Judge response didn't match the expected format — no score awarded. Raw response: {result[:160]}"
 
-        self.rounds_tracked += 1
-        return result
+        # Return the judge's explanation (everything after the winner label)
+        parts = result.split(maxsplit=1)
+        return parts[1].lstrip("—-: ").strip() if len(parts) > 1 else ""
 
-    def get_final_verdict(self, pro_final, con_final):
+    def get_final_verdict(self):
         if not self.judge_model:
             return None
 
@@ -129,19 +166,13 @@ class DebateManager:
                 Following this concise summary of the winning arguments:
                 {winning_summary}
 
-                Provide a comprehensive explanation for why the {winner_side} side was more persuasive.
+                Provide a concise explanation for why the {winner_side} side was more persuasive — at most 4 sentences total.
 
-                Your explanation should:
-                1. Highlight the strongest and most compelling arguments made by the {winner_side} side
-                2. Explain specific weaknesses in the {loser_side} side's argumentation
-                3. Demonstrate how the {winner_side} side more effectively addressed the core issues of the debate
-                4. Explain why the {winner_side} side's reasoning was ultimately more convincing
+                Briefly cover the {winner_side} side's strongest argument, the key weakness in the {loser_side} side's case, and why the {winner_side} side addressed the core issue better.
 
-                Be specific, analytical, and provide clear reasoning that goes beyond simply counting points.
-
+                Write in plain prose only — no markdown, bold text, numbered lists, or headings.
                 Format your response starting with: "{verdict_start} because..."
-                Do not simply reference that one side had more points.
-                Provide a substantive, insightful analysis of the debate's outcome."""
+                Do not simply reference that one side had more points."""
         else:
             # For ties, get a balanced two-sentence summary
             summary_prompt = f"""Review the entire debate about '{self.topic}' and provide a two-sentence summary of the specific key points from each side that resulted in a tie. Explain what concrete evidence or arguments each side presented.
@@ -155,18 +186,12 @@ class DebateManager:
                 Following this concise summary of the balanced arguments:
                 {tie_summary}
 
-                Provide a comprehensive explanation for why the debate resulted in a tie.
+                Provide a concise explanation for why the debate resulted in a tie — at most 4 sentences total.
 
-                Your explanation should:
-                1. Highlight the equally strong arguments from both sides
-                2. Explain how both Pro and Con sides presented equally compelling points
-                3. Discuss the nuanced and balanced nature of the debate topic
-                4. Demonstrate why neither side could definitively prove their position
+                Briefly cover the strongest point from each side and why neither could definitively prove their position.
 
-                Be specific, analytical, and provide clear reasoning for the tie.
-
-                Format your response starting with: "{verdict_start} because..."
-                Provide a substantive, nuanced analysis of the debate's balanced outcome."""
+                Write in plain prose only — no markdown, bold text, numbered lists, or headings.
+                Format your response starting with: "{verdict_start} because..."."""
 
         # Get judge's reasoning
         judge_reasoning = self.llm_service.get_response(prompt, self.judge_model)
@@ -188,7 +213,7 @@ class DebateManager:
             # Try again with a more forceful prompt demanding specifics
             retry_prompt = f"""Provide a specific verdict for this debate about '{self.topic}'. 
 
-            You MUST include concrete details about the exact arguments that determined the outcome.
+            You MUST include concrete details about the exact arguments that determined the outcome, in at most 4 sentences of plain prose (no markdown or lists).
             AVOID generic phrases about "careful evaluation" or "complexity".
             Instead, state the SPECIFIC concepts, evidence, or reasoning that made {winner_side if winner_side else 'each side'} {'win' if winner_side else 'equal'}.
 
@@ -203,6 +228,9 @@ class DebateManager:
         # Final fallback if we still have problems
         if not judge_reasoning.lower().startswith(verdict_start.lower()):
             # Instead of a generic fallback, construct one that at least references the topic
-            judge_reasoning = f"{verdict_start} because they provided stronger evidence about {self.topic}."
+            if winner_side:
+                judge_reasoning = f"{verdict_start} because they provided stronger evidence about {self.topic}."
+            else:
+                judge_reasoning = f"{verdict_start} — both sides made comparably strong points about {self.topic}."
 
         return judge_reasoning
