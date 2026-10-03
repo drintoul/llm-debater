@@ -4,6 +4,8 @@ An interactive AI debate platform that enables structured debates between differ
 
 ![Screenshot of AI Debate Arena](docs/screenshot.png)
 
+*A debate in progress — Pro and Con arguments stream in as styled chat bubbles, with per-claim fact-check labels and per-round judging.*
+
 ## Why I Built This
 
 Benchmarks tell you how a model scores on a test, but not how it reasons under pressure or defends a position. I built this to pit local models against each other in structured debates — a more revealing way to compare their persuasiveness, consistency, and ability to respond to counter-arguments. Since everything runs through Ollama, debates are fully local and private, and trying a new model is a config change rather than a code change.
