@@ -27,7 +27,7 @@ Benchmarks tell you how a model scores on a test, but not how it reasons under p
 1. **Configuration** — In the sidebar you pick a Pro model, a Con model, and the number of rounds. Judging and fact-checking are optional extras, each run by a model of your choice.
 2. **Round 1 — Opening statements** — Pro is prompted to argue the topic statement is TRUE; Con is prompted to argue it is FALSE. Argument length is configurable (one sentence or a short paragraph).
 3. **Rounds 2+ — Rebuttals** — Each debater receives the full running transcript plus its opponent's last argument, and is asked for a new counter-argument that doesn't repeat its earlier points.
-4. **Judging (optional)** — After each round, the judge sees the topic and that round's two arguments, then answers `WINNER — one-sentence reason`. Wins score a point, ties score half. After the final round the judge writes a short verdict explaining the outcome.
+4. **Judging (optional)** — After each round, the judge sees the topic and that round's two arguments, then answers `WINNER — one-sentence reason`. Wins score a point, ties score half; a response that doesn't match the format is shown as a warning rather than silently scored. After the final round the judge writes a short verdict explaining the outcome.
 5. **Fact checking (optional)** — After every statement, the fact-checker model labels it `VERIFIED`, `PARTIALLY VERIFIED`, or `UNVERIFIED` with a one-sentence rationale.
 6. **Mechanics** — Debater arguments stream token-by-token from Ollama's `/api/generate` endpoint; judge and fact-check calls are non-streaming. The rendered debate is kept in Streamlit session state, so it stays on screen across reruns until you start a new debate or hit Clear.
 
@@ -74,14 +74,18 @@ cp .env.example .env
 
 3. Build and run using Docker Compose:
 ```bash
-docker-compose up --build
+docker compose up --build -d
 ```
+
+Notes on the Docker setup:
+- The app source is bind-mounted into the container, so **code changes are picked up on browser refresh** — no rebuild needed. Rebuilds are only required when `requirements.txt` or the `Dockerfile` changes.
+- **`.env` changes require a recreate** (`docker compose up -d`) — environment variables are injected at container creation, so a browser refresh alone won't pick them up.
 
 ### Manual Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/drintoul/llm-debater.git
 cd llm-debater
 ```
 
@@ -111,6 +115,8 @@ streamlit run app.py
    - Enable/disable judging and fact-checking features
    - Choose models for judging and fact-checking if enabled
 
+   Pro, Con, Judge, and Fact-checker dropdowns default to random distinct models on each page load — pick whatever you like. The sidebar warns if a configured model isn't actually pulled on your Ollama server.
+
 3. Enter a debate topic in the main text area
 
 4. Click "Start Debate" to begin — arguments stream in live as each model generates them
@@ -123,16 +129,16 @@ The default model lineup (configurable via `AVAILABLE_MODELS` and `MODEL_CUTOFF_
 
 | Model | Training cutoff |
 |-------|-----------------|
+| command-r7b | Unknown |
+| gemma2:9b | June 2024 |
+| hermes3:8b | December 2023 |
 | llama3.1:8b | December 2023 |
 | llama3.2:latest | December 2023 |
-| qwen3:14b | March 2025 |
-| phi4:latest | June 2024 |
-| gemma2:9b | June 2024 |
 | mistral-nemo:latest | Unknown |
-| command-r7b | Unknown |
-| hermes3:8b | December 2023 |
+| phi4:latest | June 2024 |
+| qwen3:14b | March 2025 |
 
-Models must be pulled on your Ollama server first: `ollama pull <model>`.
+Models must be pulled on your Ollama server first: `ollama pull <model>`. If a model in `AVAILABLE_MODELS` isn't pulled, the sidebar warns you at startup rather than failing mid-debate.
 
 ## Project Structure
 
