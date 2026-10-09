@@ -1,3 +1,5 @@
 streamlit==1.31.0
 requests==2.31.0
 python-dotenv==1.0.0
+# streamlit 1.31 pins numpy<2, but unpinned pyarrow now requires numpy>=2 — pin it
+pyarrow==14.0.2
